@@ -1,1 +1,7 @@
-# Online-Shopping.java
+Online Shopping with Java
+
+Anggota
+
+IKRAM AL GHIFFARI
+ADINDA MUARRIVA
+MUHAMMAD IKRAM RAMADHANA FRIYAN
