@@ -1,15 +1,6 @@
-package Driver;
-
-import Akun.Customer;
-import Barang.Barang;
-import Barang.ListBarang;
-import Keranjang.Keranjang;
-import Transaksi.Pembayaran;
-import Transaksi.Bank;
-import Transaksi.QRIS;
-import Transaksi.COD;
-
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 
 public class CustomerDriver {
     private Customer customer;
@@ -20,104 +11,130 @@ public class CustomerDriver {
         this.listBarang = listBarang;
     }
 
+    // Metode untuk menjalankan menu customer berbasis GUI
     public void run() {
-        Scanner scanner = new Scanner(System.in);
         Keranjang keranjang = customer.getKeranjang();
         boolean running = true;
 
         while (running) {
-            System.out.println("1. Lihat Barang\n2. Tambah ke Keranjang\n3. Checkout\n4. Lihat History\n5. Keluar");
-            System.out.print("Pilihan anda: ");
-            int pilihan = scanner.nextInt();
+            String[] options = {"Lihat Barang", "Tambah ke Keranjang", "Checkout", "Lihat History", "Keluar"};
+            int pilihan = JOptionPane.showOptionDialog(null, "Pilih Aksi Customer:", "Menu Customer",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 
             switch (pilihan) {
+                case 0:
+                    lihatBarang();
+                    break;
                 case 1:
-                    listBarang.displayBarang();
+                    tambahKeKeranjang(keranjang);
                     break;
                 case 2:
-                    tambahKeKeranjang(scanner, keranjang);
+                    checkout(keranjang);
                     break;
                 case 3:
-                    checkout(scanner, keranjang);
-                    break;
-                case 4:
                     lihatHistoryBelanja();
                     break;
-                case 5:
+                case 4:
                     running = false;
+                    JOptionPane.showMessageDialog(null, "Keluar dari menu Customer.");
                     break;
                 default:
-                    System.out.println("Pilihan tidak valid.");
                     break;
             }
         }
     }
 
-    private void tambahKeKeranjang(Scanner scanner, Keranjang keranjang) {
-        System.out.print("Nama Barang yang ingin dibeli: ");
-        String nama = scanner.next();
-        for (Barang barang : listBarang.getBarangList()) {
-            if (barang.getNama().equalsIgnoreCase(nama)) {
-                keranjang.tambahBarang(barang);
-                System.out.println("Barang ditambahkan ke keranjang.");
-                return;
-            }
+    // Metode GUI untuk melihat daftar barang
+    private void lihatBarang() {
+        List<Barang> barangList = listBarang.getBarangList();
+        StringBuilder sb = new StringBuilder("=== Daftar Barang ===\n");
+        for (Barang barang : barangList) {
+            sb.append(barang).append("\n");
         }
-        System.out.println("Barang tidak ditemukan.");
+        JTextArea textArea = new JTextArea(sb.toString());
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(400, 200));
+        JOptionPane.showMessageDialog(null, scrollPane, "Lihat Barang", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void checkout(Scanner scanner, Keranjang keranjang) {
-        System.out.println("Pilih metode pembayaran:");
-        System.out.println("1. QRIS");
-        System.out.println("2. Bank");
-        System.out.println("3. COD");
-    
-        int metode = scanner.nextInt();
+    // Metode GUI untuk menambahkan barang ke keranjang
+    private void tambahKeKeranjang(Keranjang keranjang) {
+        String namaBarang = JOptionPane.showInputDialog(null, "Masukkan Nama Barang yang ingin dibeli:");
+        if (namaBarang != null && !namaBarang.isEmpty()) {
+            for (Barang barang : listBarang.getBarangList()) {
+                if (barang.getNama().equalsIgnoreCase(namaBarang)) {
+                    keranjang.tambahBarang(barang);
+                    JOptionPane.showMessageDialog(null, "Barang ditambahkan ke keranjang.");
+                    return;
+                }
+            }
+            JOptionPane.showMessageDialog(null, "Barang tidak ditemukan.");
+        }
+    }
+
+    // Metode GUI untuk checkout
+    private void checkout(Keranjang keranjang) {
+        String[] metodePembayaran = {"QRIS", "Bank", "COD"};
+        int metode = JOptionPane.showOptionDialog(null, "Pilih Metode Pembayaran:", "Checkout",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, metodePembayaran, metodePembayaran[0]);
+
         Pembayaran pembayaran = null;
-    
+
         switch (metode) {
-            case 1:
+            case 0:
                 pembayaran = new QRIS("QRIS");
                 break;
-            case 2:
+            case 1:
                 pembayaran = new Bank("Bank");
                 break;
-            case 3:
+            case 2:
                 pembayaran = new COD("COD");
                 break;
             default:
-                System.out.println("Metode pembayaran tidak valid.");
+                JOptionPane.showMessageDialog(null, "Metode pembayaran tidak valid.");
                 return;
         }
-    
+
         if (pembayaran != null) {
             pembayaran.prosesPembayaran();
             
-            // Kurangi stok barang berdasarkan isi keranjang
+            // Mengurangi stok barang
             for (Barang barang : keranjang.getBarangKeranjang().keySet()) {
                 int jumlah = keranjang.getBarangKeranjang().get(barang);
                 boolean stokDikurangi = listBarang.kurangiStok(barang.getNama(), jumlah);
                 if (!stokDikurangi) {
-                    System.out.println("Gagal mengurangi stok barang: " + barang.getNama());
+                    JOptionPane.showMessageDialog(null, "Gagal mengurangi stok barang: " + barang.getNama());
                 }
             }
-    
+
             // Membuat invoice dan menambahkannya ke riwayat transaksi customer
             String invoice = "INV" + (customer.getHistory().size() + 1);
             customer.addInvoice(invoice);
-            System.out.println("Pembayaran berhasil. Invoice: " + invoice);
-    
-            // Kosongkan keranjang
+            JOptionPane.showMessageDialog(null, "Pembayaran berhasil. Invoice: " + invoice);
+
+            // Mengosongkan keranjang
             keranjang.kosongkanKeranjang();
         } else {
-            System.out.println("Pembayaran gagal dilakukan.");
+            JOptionPane.showMessageDialog(null, "Pembayaran gagal dilakukan.");
         }
     }
-    
 
+    // Metode GUI untuk melihat riwayat belanja
     private void lihatHistoryBelanja() {
-        for (String invoice : customer.getHistory()) {
-            System.out.println(invoice);
+        List<String> history = customer.getHistory();
+        if (history.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Belum ada transaksi yang selesai.");
+        } else {
+            StringBuilder sb = new StringBuilder("=== Riwayat Belanja ===\n");
+            for (String invoice : history) {
+                sb.append(invoice).append("\n");
+            }
+            JTextArea textArea = new JTextArea(sb.toString());
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(400, 200));
+            JOptionPane.showMessageDialog(null, scrollPane, "History Belanja", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }
