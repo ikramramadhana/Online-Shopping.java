@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+// Class Barang
 class Barang {
   private String nama;
   private double harga;
@@ -25,6 +26,7 @@ class Barang {
   }
 }
 
+// Class Transaksi
 class Transaksi {
   private String idTransaksi;
   private List<Barang> barangList;
@@ -54,6 +56,7 @@ class Transaksi {
   }
 }
 
+// Class AdminDriver
 public class AdminDriver {
   private List<Barang> listBarang;
     private List<Transaksi> listTransaksi;
@@ -63,12 +66,14 @@ public class AdminDriver {
         this.listTransaksi = new ArrayList<>();
     }
 
+    // tambah barang
     public void tambahBarang(String nama, double harga) {
         Barang barang = new Barang(nama, harga);
         listBarang.add(barang);
         System.out.println("Barang berhasil ditambahkan: " + barang);
     }
 
+    // hapus barang
     public void hapusBarang(String namaBarang) {
         boolean isRemoved = listBarang.removeIf(barang -> barang.getNama().equalsIgnoreCase(namaBarang));
         if (isRemoved) {
@@ -78,6 +83,7 @@ public class AdminDriver {
         }
     }
 
+    // edit barang
     public void editBarang(String namaLama, String namaBaru, double hargaBaru) {
         for (Barang barang : listBarang) {
             if (barang.getNama().equalsIgnoreCase(namaLama)) {
@@ -90,6 +96,7 @@ public class AdminDriver {
         System.out.println("Barang dengan nama '" + namaLama + "' tidak ditemukan.");
     }
 
+    // lihat barang
     public void lihatBarang() {
         if (listBarang.isEmpty()) {
             System.out.println("Daftar barang kosong.");
@@ -101,12 +108,14 @@ public class AdminDriver {
         }
     }
 
+    // terima transaksi
     public void terimaTransaksi(String idTransaksi, List<Barang> barangList) {
         Transaksi transaksi = new Transaksi(idTransaksi, barangList);
         listTransaksi.add(transaksi);
         System.out.println("Transaksi berhasil diterima: " + transaksi);
     }
 
+    // lihat transaksi
     public void lihatTransaksi() {
         if (listTransaksi.isEmpty()) {
             System.out.println("Tidak ada transaksi.");
