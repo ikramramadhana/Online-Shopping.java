@@ -1,218 +1,206 @@
+import javax.swing.*;
+import javax.swing.border.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 // Class Barang
 class Barang {
-  private String nama;
-  private double harga;
+    private String nama;
+    private double harga;
 
-  public Barang (String nama, double harga) {
-    this.nama = nama;
-    this.harga = harga;
-  }
-
-  public String getNama() {
-    return nama;
-  }
-
-  public double getHarga() {
-    return harga;
-  }
-
-  @Override 
-  public String toString() {
-    return "Barang{" + "nama='" + nama + '\'' + ", harga=" + harga + '}';
-  }
-}
-
-// Class Transaksi
-class Transaksi {
-  private String idTransaksi;
-  private List<Barang> barangList;
-  private double totalHarga;
-
-  public Transaksi (String idTransaksi, List<Barang> barangList) {
-    this.idTransaksi = idTransaksi;
-    this.barangList = barangList;
-    this.totalHarga = hitungTotalHarga();
-  }
-
-  private double hitungTotalHarga() {
-    double total = 0;
-    for (Barang barang : barangList) {
-      total += barang.getHarga();
+    public Barang(String nama, double harga) {
+        this.nama = nama;
+        this.harga = harga;
     }
-    return total;
-  }
 
-  @Override
-  public String toString() {
-    return "Transaksi{" +
-            "idTransaksi='" + idTransaksi + '\'' +
-            ", barangList=" + barangList +
-            ", totalHarga=" + totalHarga +
-            '}';
-  }
+    public String getNama() {
+        return nama;
+    }
+
+    public double getHarga() {
+        return harga;
+    }
+
+    @Override
+    public String toString() {
+        return nama + " - Rp " + harga;
+    }
 }
 
-// Class AdminDriver
-public class AdminDriver {
-  private List<Barang> listBarang;
-    private List<Transaksi> listTransaksi;
+// Class AdminDriver dengan GUI
+public class AdminDriver extends JFrame {
+    private List<Barang> listBarang;
+    private DefaultListModel<String> barangListModel;
+    private JList<String> barangList;
 
     public AdminDriver() {
-        this.listBarang = new ArrayList<>();
-        this.listTransaksi = new ArrayList<>();
-    }
+        setTitle("Kelompok 11 - Admin Dashboard");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-    // tambah barang
-    public void tambahBarang(String nama, double harga) {
-        Barang barang = new Barang(nama, harga);
-        listBarang.add(barang);
-        System.out.println("Barang berhasil ditambahkan: " + barang);
-    }
+        listBarang = new ArrayList<>();
+        barangListModel = new DefaultListModel<>();
+        barangList = new JList<>(barangListModel);
 
-    // hapus barang
-    public void hapusBarang(String namaBarang) {
-        boolean isRemoved = listBarang.removeIf(barang -> barang.getNama().equalsIgnoreCase(namaBarang));
-        if (isRemoved) {
-            System.out.println("Barang dengan nama '" + namaBarang + "' berhasil dihapus.");
-        } else {
-            System.out.println("Barang dengan nama '" + namaBarang + "' tidak ditemukan.");
-        }
-    }
+        // Header
+        JLabel headerLabel = new JLabel("Admin Dashboard", SwingConstants.CENTER);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        headerLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        add(headerLabel, BorderLayout.NORTH);
 
-    // edit barang
-    public void editBarang(String namaLama, String namaBaru, double hargaBaru) {
-        for (Barang barang : listBarang) {
-            if (barang.getNama().equalsIgnoreCase(namaLama)) {
-                listBarang.remove(barang);
-                listBarang.add(new Barang(namaBaru, hargaBaru));
-                System.out.println("Barang berhasil diperbarui.");
-                return;
-            }
-        }
-        System.out.println("Barang dengan nama '" + namaLama + "' tidak ditemukan.");
-    }
+        // Panel Konten
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-    // lihat barang
-    public void lihatBarang() {
-        if (listBarang.isEmpty()) {
-            System.out.println("Daftar barang kosong.");
-        } else {
-            System.out.println("Daftar Barang:");
-            for (Barang barang : listBarang) {
-                System.out.println("- " + barang);
-            }
-        }
-    }
+        // Daftar Barang
+        JPanel listPanel = new JPanel(new BorderLayout(10, 10));
+        listPanel.setBorder(new TitledBorder("Daftar Barang"));
 
-    // terima transaksi
-    public void terimaTransaksi(String idTransaksi, List<Barang> barangList) {
-        Transaksi transaksi = new Transaksi(idTransaksi, barangList);
-        listTransaksi.add(transaksi);
-        System.out.println("Transaksi berhasil diterima: " + transaksi);
-    }
+        JScrollPane scrollPane = new JScrollPane(barangList);
+        listPanel.add(scrollPane, BorderLayout.CENTER);
 
-    // lihat transaksi
-    public void lihatTransaksi() {
-        if (listTransaksi.isEmpty()) {
-            System.out.println("Tidak ada transaksi.");
-        } else {
-            System.out.println("Daftar Transaksi:");
-            for (Transaksi transaksi : listTransaksi) {
-                System.out.println("- " + transaksi);
-            }
-        }
-    }
+        // Tombol di bawah daftar barang
+        JPanel listButtonPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+        JButton deleteButton = new JButton("Hapus Barang");
+        JButton editButton = new JButton("Edit Barang");
 
-    public void menuCLI() {
-        Scanner scanner = new Scanner(System.in);
-        boolean exit = false;
+        listButtonPanel.add(deleteButton);
+        listButtonPanel.add(editButton);
+        listPanel.add(listButtonPanel, BorderLayout.SOUTH);
 
-        while (!exit) {
-            System.out.println("\n=== Menu Admin ===");
-            System.out.println("1. Tambah Barang");
-            System.out.println("2. Hapus Barang");
-            System.out.println("3. Edit Barang");
-            System.out.println("4. Lihat Barang");
-            System.out.println("5. Kelola Transaksi");
-            System.out.println("6. Lihat Transaksi");
-            System.out.println("7. Keluar");
-            System.out.print("Pilih menu: ");
+        contentPanel.add(listPanel, BorderLayout.CENTER);
 
-            int pilihan = scanner.nextInt();
-            scanner.nextLine(); // Konsumsi newline
+        // Form Tambah Barang
+        JPanel formPanel = new JPanel(new GridLayout(5, 1, 10, 10));
+        formPanel.setBorder(new TitledBorder("Tambah Barang"));
 
-            switch (pilihan) {
-                case 1 -> {
-                    System.out.print("Masukkan nama barang: ");
-                    String nama = scanner.nextLine();
-                    System.out.print("Masukkan harga barang: ");
-                    double harga = scanner.nextDouble();
-                    tambahBarang(nama, harga);
+        JLabel nameLabel = new JLabel("Nama Barang:");
+        JTextField nameField = new JTextField();
+
+        JLabel priceLabel = new JLabel("Harga Barang:");
+        JTextField priceField = new JTextField();
+
+        JButton addButton = new JButton("Tambah Barang");
+
+        formPanel.add(nameLabel);
+        formPanel.add(nameField);
+        formPanel.add(priceLabel);
+        formPanel.add(priceField);
+        formPanel.add(addButton);
+
+        contentPanel.add(formPanel, BorderLayout.EAST);
+
+        add(contentPanel, BorderLayout.CENTER);
+
+        // Panel Footer
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton transaksiButton = new JButton("Kelola Transaksi");
+        JButton logoutButton = new JButton("Logout");
+        footerPanel.add(transaksiButton);
+        footerPanel.add(logoutButton);
+        add(footerPanel, BorderLayout.SOUTH);
+
+        // Event untuk tombol Tambah Barang
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nama = nameField.getText();
+                String hargaStr = priceField.getText();
+
+                if (nama.isEmpty() || hargaStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(AdminDriver.this, "Nama dan harga harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
-                case 2 -> {
-                    System.out.print("Masukkan nama barang yang ingin dihapus: ");
-                    String nama = scanner.nextLine();
-                    hapusBarang(nama);
-                }
-                case 3 -> {
-                    System.out.print("Masukkan nama barang yang ingin diedit: ");
-                    String namaLama = scanner.nextLine();
-                    System.out.print("Masukkan nama baru: ");
-                    String namaBaru = scanner.nextLine();
-                    System.out.print("Masukkan harga baru: ");
-                    double hargaBaru = scanner.nextDouble();
-                    editBarang(namaLama, namaBaru, hargaBaru);
-                }
-                case 4 -> lihatBarang();
-                case 5 -> {
-                    System.out.print("Masukkan ID Transaksi: ");
-                    String idTransaksi = scanner.nextLine();
-                    List<Barang> barangTransaksi = new ArrayList<>();
-                    System.out.println("Masukkan barang untuk transaksi (ketik 'done' jika selesai):");
-                    while (true) {
-                        System.out.print("Nama barang: ");
-                        String namaBarang = scanner.nextLine();
-                        if (namaBarang.equalsIgnoreCase("done")) break;
 
-                        Barang barang = listBarang.stream()
-                                .filter(b -> b.getNama().equalsIgnoreCase(namaBarang))
-                                .findFirst()
-                                .orElse(null);
+                try {
+                    double harga = Double.parseDouble(hargaStr);
+                    Barang barang = new Barang(nama, harga);
+                    listBarang.add(barang);
+                    barangListModel.addElement(barang.toString());
+                    nameField.setText("");
+                    priceField.setText("");
+                    JOptionPane.showMessageDialog(AdminDriver.this, "Barang berhasil ditambahkan!");
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(AdminDriver.this, "Harga harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
 
-                        if (barang != null) {
-                            barangTransaksi.add(barang);
-                        } else {
-                            System.out.println("Barang tidak ditemukan.");
+        // Event untuk tombol Hapus Barang
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = barangList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    listBarang.remove(selectedIndex);
+                    barangListModel.remove(selectedIndex);
+                    JOptionPane.showMessageDialog(AdminDriver.this, "Barang berhasil dihapus!");
+                } else {
+                    JOptionPane.showMessageDialog(AdminDriver.this, "Pilih barang yang ingin dihapus!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Event untuk tombol Edit Barang
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = barangList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    Barang barang = listBarang.get(selectedIndex);
+
+                    String newNama = JOptionPane.showInputDialog(AdminDriver.this, "Masukkan nama baru:", barang.getNama());
+                    String newHargaStr = JOptionPane.showInputDialog(AdminDriver.this, "Masukkan harga baru:", barang.getHarga());
+
+                    if (newNama != null && !newNama.isEmpty() && newHargaStr != null && !newHargaStr.isEmpty()) {
+                        try {
+                            double newHarga = Double.parseDouble(newHargaStr);
+                            barangList.remove(selectedIndex);
+                            listBarang.set(selectedIndex, new Barang(newNama, newHarga));
+                            barangListModel.set(selectedIndex, newNama + " - Rp " + newHarga);
+                            JOptionPane.showMessageDialog(AdminDriver.this, "Barang berhasil diedit!");
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(AdminDriver.this, "Harga harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
                         }
                     }
-                    terimaTransaksi(idTransaksi, barangTransaksi);
+                } else {
+                    JOptionPane.showMessageDialog(AdminDriver.this, "Pilih barang yang ingin diedit!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-                case 6 -> lihatTransaksi();
-                case 7 -> {
-                    exit = true;
-                    System.out.println("Keluar dari aplikasi.");
-                }
-                default -> System.out.println("Pilihan tidak valid.");
             }
-        }
-        scanner.close();
+        });
+
+        // Event untuk tombol Kelola Transaksi
+        transaksiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(AdminDriver.this, "Fitur Kelola Transaksi belum diimplementasikan!", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        // Event untuk tombol Logout
+        logoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int confirm = JOptionPane.showConfirmDialog(AdminDriver.this, "Yakin ingin logout?", "Konfirmasi Logout", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    dispose(); // Menutup window Admin
+                    Interface login = new Interface();
+                    login.setVisible(true);
+                }
+            }
+        });
     }
 
     public static void main(String[] args) {
-        AdminDriver adminDriver = new AdminDriver();
-        adminDriver.menuCLI();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new AdminDriver().setVisible(true);
+            }
+        });
     }
 }
-
-
-
-
-  
-
-  
-
-
