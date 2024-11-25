@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -7,12 +8,21 @@ import java.util.List;
 
 // Class Barang
 class Barang {
+    private static int counter = 1; // Counter untuk ID Barang
+    private int id;
     private String nama;
     private double harga;
+    private int stok;
 
-    public Barang(String nama, double harga) {
+    public Barang(String nama, double harga, int stok) {
+        this.id = counter++;
         this.nama = nama;
         this.harga = harga;
+        this.stok = stok;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getNama() {
@@ -23,184 +33,262 @@ class Barang {
         return harga;
     }
 
-    @Override
-    public String toString() {
-        return nama + " - Rp " + harga;
+    public int getStok() {
+        return stok;
+    }
+
+    public void setNama(String nama) {
+        this.nama = nama;
+    }
+
+    public void setHarga(double harga) {
+        this.harga = harga;
+    }
+
+    public void setStok(int stok) {
+        this.stok = stok;
     }
 }
 
-// Class AdminDriver dengan GUI
+// Class Transaksi
+class Transaksi {
+    private String pelanggan;
+    private Barang barang;
+    private int jumlah;
+    private double totalHarga;
+
+    public Transaksi(String pelanggan, Barang barang, int jumlah) {
+        this.pelanggan = pelanggan;
+        this.barang = barang;
+        this.jumlah = jumlah;
+        this.totalHarga = jumlah * barang.getHarga();
+    }
+
+    public String getPelanggan() {
+        return pelanggan;
+    }
+
+    public Barang getBarang() {
+        return barang;
+    }
+
+    public int getJumlah() {
+        return jumlah;
+    }
+
+    public double getTotalHarga() {
+        return totalHarga;
+    }
+}
+
+// Class GradientPanel untuk background gradien
+class GradientPanel extends JPanel {
+    private Color color1;
+    private Color color2;
+
+    public GradientPanel(Color color1, Color color2) {
+        this.color1 = color1;
+        this.color2 = color2;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        int width = getWidth();
+        int height = getHeight();
+        GradientPaint gp = new GradientPaint(0, 0, color1, 0, height, color2);
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, width, height);
+    }
+}
+
+// Class AdminDriver dengan GUI menggunakan JTable
 public class AdminDriver extends JFrame {
     private List<Barang> listBarang;
-    private DefaultListModel<String> barangListModel;
-    private JList<String> barangList;
+    private List<Transaksi> listTransaksi; 
+    private DefaultTableModel tableModel;
 
     public AdminDriver() {
         setTitle("Kelompok 11 - Admin Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         listBarang = new ArrayList<>();
-        barangListModel = new DefaultListModel<>();
-        barangList = new JList<>(barangListModel);
+        listTransaksi = new ArrayList<>();
+        tableModel = new DefaultTableModel(new String[]{"ID", "Nama Barang", "Harga Barang", "Stok"}, 0);
+
+        // Panel utama dengan background gradient biru
+        GradientPanel mainPanel = new GradientPanel(new Color(135, 206, 235), new Color(25, 25, 112));
+        mainPanel.setLayout(new BorderLayout(10, 10));
 
         // Header
         JLabel headerLabel = new JLabel("Admin Dashboard", SwingConstants.CENTER);
-        headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        headerLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        add(headerLabel, BorderLayout.NORTH);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        headerLabel.setForeground(Color.WHITE);
+        headerLabel.setBorder(new EmptyBorder(20, 10, 20, 10));
+        mainPanel.add(headerLabel, BorderLayout.NORTH);
 
-        // Panel Konten
+        // Konten utama
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
-        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Daftar Barang
-        JPanel listPanel = new JPanel(new BorderLayout(10, 10));
-        listPanel.setBorder(new TitledBorder("Daftar Barang"));
+        // Tabel Barang
+        JTable barangTable = new JTable(tableModel);
+        JScrollPane tableScrollPane = new JScrollPane(barangTable);
+        contentPanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        JScrollPane scrollPane = new JScrollPane(barangList);
-        listPanel.add(scrollPane, BorderLayout.CENTER);
+        // Panel tombol di bawah tabel
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        buttonPanel.setOpaque(false);
 
-        // Tombol di bawah daftar barang
-        JPanel listButtonPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+        JButton addButton = new JButton("Tambah Barang");
         JButton deleteButton = new JButton("Hapus Barang");
         JButton editButton = new JButton("Edit Barang");
 
-        listButtonPanel.add(deleteButton);
-        listButtonPanel.add(editButton);
-        listPanel.add(listButtonPanel, BorderLayout.SOUTH);
+        buttonPanel.add(addButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(editButton);
 
-        contentPanel.add(listPanel, BorderLayout.CENTER);
+        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Form Tambah Barang
-        JPanel formPanel = new JPanel(new GridLayout(5, 1, 10, 10));
-        formPanel.setBorder(new TitledBorder("Tambah Barang"));
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
 
-        JLabel nameLabel = new JLabel("Nama Barang:");
-        JTextField nameField = new JTextField();
-
-        JLabel priceLabel = new JLabel("Harga Barang:");
-        JTextField priceField = new JTextField();
-
-        JButton addButton = new JButton("Tambah Barang");
-
-        formPanel.add(nameLabel);
-        formPanel.add(nameField);
-        formPanel.add(priceLabel);
-        formPanel.add(priceField);
-        formPanel.add(addButton);
-
-        contentPanel.add(formPanel, BorderLayout.EAST);
-
-        add(contentPanel, BorderLayout.CENTER);
-
-        // Panel Footer
-        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        // Footer
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        footerPanel.setOpaque(false);
         JButton transaksiButton = new JButton("Kelola Transaksi");
         JButton logoutButton = new JButton("Logout");
         footerPanel.add(transaksiButton);
         footerPanel.add(logoutButton);
-        add(footerPanel, BorderLayout.SOUTH);
+        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+
+        setContentPane(mainPanel);
 
         // Event untuk tombol Tambah Barang
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nama = nameField.getText();
-                String hargaStr = priceField.getText();
+        addButton.addActionListener(e -> {
+            String nama = JOptionPane.showInputDialog(this, "Masukkan nama barang:");
+            if (nama == null || nama.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nama barang tidak boleh kosong!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                if (nama.isEmpty() || hargaStr.isEmpty()) {
-                    JOptionPane.showMessageDialog(AdminDriver.this, "Nama dan harga harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+            String hargaStr = JOptionPane.showInputDialog(this, "Masukkan harga barang:");
+            String stokStr = JOptionPane.showInputDialog(this, "Masukkan stok barang:");
 
-                try {
-                    double harga = Double.parseDouble(hargaStr);
-                    Barang barang = new Barang(nama, harga);
-                    listBarang.add(barang);
-                    barangListModel.addElement(barang.toString());
-                    nameField.setText("");
-                    priceField.setText("");
-                    JOptionPane.showMessageDialog(AdminDriver.this, "Barang berhasil ditambahkan!");
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(AdminDriver.this, "Harga harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+            if (hargaStr == null || hargaStr.isEmpty() || stokStr == null || stokStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Harga dan stok barang tidak boleh kosong!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                double harga = Double.parseDouble(hargaStr);
+                int stok = Integer.parseInt(stokStr);
+
+                Barang barang = new Barang(nama, harga, stok);
+                listBarang.add(barang);
+                tableModel.addRow(new Object[]{barang.getId(), barang.getNama(), barang.getHarga(), barang.getStok()});
+                JOptionPane.showMessageDialog(this, "Barang berhasil ditambahkan!");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Harga dan stok harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         // Event untuk tombol Hapus Barang
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedIndex = barangList.getSelectedIndex();
-                if (selectedIndex != -1) {
-                    listBarang.remove(selectedIndex);
-                    barangListModel.remove(selectedIndex);
-                    JOptionPane.showMessageDialog(AdminDriver.this, "Barang berhasil dihapus!");
-                } else {
-                    JOptionPane.showMessageDialog(AdminDriver.this, "Pilih barang yang ingin dihapus!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+        deleteButton.addActionListener(e -> {
+            int selectedRow = barangTable.getSelectedRow();
+            if (selectedRow != -1) {
+                listBarang.remove(selectedRow);
+                tableModel.removeRow(selectedRow);
+                JOptionPane.showMessageDialog(this, "Barang berhasil dihapus!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Pilih barang yang ingin dihapus!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         // Event untuk tombol Edit Barang
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedIndex = barangList.getSelectedIndex();
-                if (selectedIndex != -1) {
-                    Barang barang = listBarang.get(selectedIndex);
+        editButton.addActionListener(e -> {
+            int selectedRow = barangTable.getSelectedRow();
+            if (selectedRow != -1) {
+                Barang barang = listBarang.get(selectedRow);
 
-                    String newNama = JOptionPane.showInputDialog(AdminDriver.this, "Masukkan nama baru:", barang.getNama());
-                    String newHargaStr = JOptionPane.showInputDialog(AdminDriver.this, "Masukkan harga baru:", barang.getHarga());
+                String newNama = JOptionPane.showInputDialog(this, "Masukkan nama baru:", barang.getNama());
+                if (newNama == null || newNama.isEmpty()) return;
 
-                    if (newNama != null && !newNama.isEmpty() && newHargaStr != null && !newHargaStr.isEmpty()) {
-                        try {
-                            double newHarga = Double.parseDouble(newHargaStr);
-                            barangList.remove(selectedIndex);
-                            listBarang.set(selectedIndex, new Barang(newNama, newHarga));
-                            barangListModel.set(selectedIndex, newNama + " - Rp " + newHarga);
-                            JOptionPane.showMessageDialog(AdminDriver.this, "Barang berhasil diedit!");
-                        } catch (NumberFormatException ex) {
-                            JOptionPane.showMessageDialog(AdminDriver.this, "Harga harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(AdminDriver.this, "Pilih barang yang ingin diedit!", "Error", JOptionPane.ERROR_MESSAGE);
+                String newHargaStr = JOptionPane.showInputDialog(this, "Masukkan harga baru:", barang.getHarga());
+                String newStokStr = JOptionPane.showInputDialog(this, "Masukkan stok baru:", barang.getStok());
+
+                if (newHargaStr == null || newStokStr == null || newHargaStr.isEmpty() || newStokStr.isEmpty()) return;
+
+                try {
+                    double newHarga = Double.parseDouble(newHargaStr);
+                    int newStok = Integer.parseInt(newStokStr);
+
+                    barang.setNama(newNama);
+                    barang.setHarga(newHarga);
+                    barang.setStok(newStok);
+
+                    tableModel.setValueAt(newNama, selectedRow, 1);
+                    tableModel.setValueAt(newHarga, selectedRow, 2);
+                    tableModel.setValueAt(newStok, selectedRow, 3);
+
+                    JOptionPane.showMessageDialog(this, "Barang berhasil diedit!");
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Harga dan stok harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+            } else {
+                JOptionPane.showMessageDialog(this, "Pilih barang yang ingin diedit!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // Event untuk tombol Kelola Transaksi
-        transaksiButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(AdminDriver.this, "Fitur Kelola Transaksi belum diimplementasikan!", "Info", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
 
         // Event untuk tombol Logout
-        logoutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int confirm = JOptionPane.showConfirmDialog(AdminDriver.this, "Yakin ingin logout?", "Konfirmasi Logout", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    dispose(); // Menutup window Admin
-                    Interface login = new Interface();
-                    login.setVisible(true);
-                }
+        logoutButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this, "Yakin ingin logout?", "Konfirmasi Logout", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                dispose();
             }
         });
     }
 
+    private void kelolaTransaksi() {
+        JDialog transaksiDialog = new JDialog(this, "Kelola Transaksi", true);
+        transaksiDialog.setSize(600, 400);
+        transaksiDialog.setLocationRelativeTo(this);
+
+        DefaultTableModel transaksiTableModel = new DefaultTableModel(
+                new String[]{"Nama Pelanggan", "Nama Barang", "Jumlah", "Total Harga"}, 0
+        );
+
+        for (Transaksi transaksi : listTransaksi) {
+            transaksiTableModel.addRow(new Object[]{
+                    transaksi.getPelanggan(),
+                    transaksi.getBarang().getNama(),
+                    transaksi.getJumlah(),
+                    transaksi.getTotalHarga()
+            });
+        }
+
+        JTable transaksiTable = new JTable(transaksiTableModel);
+        JScrollPane transaksiScrollPane = new JScrollPane(transaksiTable);
+
+        transaksiDialog.setLayout(new BorderLayout());
+        transaksiDialog.add(transaksiScrollPane, BorderLayout.CENTER);
+
+        JButton closeButton = new JButton("Tutup");
+        closeButton.addActionListener(e -> transaksiDialog.dispose());
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomPanel.add(closeButton);
+        transaksiDialog.add(bottomPanel, BorderLayout.SOUTH);
+
+        transaksiDialog.setVisible(true);
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new AdminDriver().setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            AdminDriver admin = new AdminDriver();
+            admin.setVisible(true);
         });
     }
 }
