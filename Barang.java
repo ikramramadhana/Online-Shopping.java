@@ -3,14 +3,14 @@ public class Barang {
     private String nama;
     private int stok;
     private double harga;
-    private int jumlah;  // Jumlah barang di keranjang
+    private int jumlah;  
 
     public Barang(String idBarang, String nama, int stok, double harga) {
         this.idBarang = idBarang;
         this.nama = nama;
         this.stok = stok;
         this.harga = harga;
-        this.jumlah = 0;  // Inisialisasi jumlah barang di keranjang
+        this.jumlah = 0;  
     }
 
     public String getIdBarang() {
