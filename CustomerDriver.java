@@ -1,182 +1,141 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*;
-import java.util.ArrayList;
+import java.util.Scanner;
 
-// Class Barang
-class Barang {
-    private String nama;
-    private double harga;
-
-    public Barang(String nama, double harga) {
-        this.nama = nama;
-        this.harga = harga;
-    }
-
-    public String getNama() {
-        return nama;
-    }
-
-    public double getHarga() {
-        return harga;
-    }
-
-    @Override
-    public String toString() {
-        return nama + " - Rp " + harga;
-    }
-}
-
-// Class Keranjang
-class Keranjang {
-    private ArrayList<Barang> barangList;
-
-    public Keranjang() {
-        barangList = new ArrayList<>();
-    }
-
-    public void tambahBarang(Barang barang) {
-        barangList.add(barang);
-    }
-
-    public ArrayList<Barang> getBarangList() {
-        return barangList;
-    }
-
-    public double totalHarga() {
-        return barangList.stream().mapToDouble(Barang::getHarga).sum();
-    }
-}
-
-// Main GUI untuk CustomerDriver
 public class CustomerDriver {
-    private JFrame frame;
-    private DefaultListModel<Barang> barangModel;
-    private DefaultListModel<Barang> keranjangModel;
-    private Keranjang keranjang;
-    private ArrayList<Barang> daftarBarang;
+    private Customer customer;
+    private ListBarang listBarang;
+    private Scanner scanner;
 
-    public CustomerDriver() {
-        // Inisialisasi data
-        keranjang = new Keranjang();
-        daftarBarang = new ArrayList<>();
-
-        // Baca data barang dari file
-        bacaBarangDariFile("barang.txt");
-
-        // GUI Setup
-        frame = new JFrame("Customer Dashboard");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
-
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        JLabel titleLabel = new JLabel("Customer Dashboard", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        mainPanel.add(titleLabel, BorderLayout.NORTH);
-
-        // Panel List Barang
-        barangModel = new DefaultListModel<>();
-        for (Barang barang : daftarBarang) {
-            barangModel.addElement(barang);
-        }
-
-        JList<Barang> barangList = new JList<>(barangModel);
-        barangList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JScrollPane barangScrollPane = new JScrollPane(barangList);
-        JPanel barangPanel = new JPanel(new BorderLayout());
-        barangPanel.setBorder(BorderFactory.createTitledBorder("List Barang"));
-        barangPanel.add(barangScrollPane, BorderLayout.CENTER);
-
-        // Panel Keranjang
-        keranjangModel = new DefaultListModel<>();
-        JList<Barang> keranjangList = new JList<>(keranjangModel);
-        keranjangList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JScrollPane keranjangScrollPane = new JScrollPane(keranjangList);
-        JPanel keranjangPanel = new JPanel(new BorderLayout());
-        keranjangPanel.setBorder(BorderFactory.createTitledBorder("Keranjang"));
-        keranjangPanel.add(keranjangScrollPane, BorderLayout.CENTER);
-
-        // Panel tombol
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
-        JButton tambahButton = new JButton("Tambah ke Keranjang");
-        JButton checkoutButton = new JButton("Checkout");
-        JButton metodePembayaranButton = new JButton("Pilih Pembayaran");
-
-        buttonPanel.add(tambahButton);
-        buttonPanel.add(checkoutButton);
-        buttonPanel.add(metodePembayaranButton);
-
-        // Panel bawah
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.add(keranjangPanel, BorderLayout.CENTER);
-        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        // Tambahkan ke frame
-        mainPanel.add(barangPanel, BorderLayout.CENTER);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-        frame.add(mainPanel);
-
-        // Action Listener
-        tambahButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Barang selectedBarang = barangList.getSelectedValue();
-                if (selectedBarang != null) {
-                    keranjang.tambahBarang(selectedBarang);
-                    keranjangModel.addElement(selectedBarang);
-                    JOptionPane.showMessageDialog(frame, "Barang berhasil ditambahkan ke keranjang!");
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Pilih barang terlebih dahulu!");
-                }
-            }
-        });
-
-        checkoutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (keranjang.getBarangList().isEmpty()) {
-                    JOptionPane.showMessageDialog(frame, "Keranjang kosong! Tambahkan barang terlebih dahulu.");
-                } else {
-                    double total = keranjang.totalHarga();
-                    JOptionPane.showMessageDialog(frame, "Total belanja: Rp " + total);
-                }
-            }
-        });
-
-        metodePembayaranButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] metodePembayaran = {"QRIS", "Bank Transfer", "COD"};
-                String pilihan = (String) JOptionPane.showInputDialog(frame, "Pilih metode pembayaran:",
-                        "Metode Pembayaran", JOptionPane.PLAIN_MESSAGE, null, metodePembayaran, metodePembayaran[0]);
-
-                if (pilihan != null) {
-                    JOptionPane.showMessageDialog(frame, "Anda memilih metode pembayaran: " + pilihan);
-                }
-            }
-        });
-
-        frame.setVisible(true);
+    public CustomerDriver(Customer customer, ListBarang listBarang) {
+        this.customer = customer;
+        this.listBarang = listBarang;
+        this.scanner = new Scanner(System.in); // Initialize scanner once
     }
 
-    // Method untuk membaca barang dari file
-    private void bacaBarangDariFile(String fileName) {
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                String nama = parts[0];
-                double harga = Double.parseDouble(parts[1]);
-                daftarBarang.add(new Barang(nama, harga));
+    public void start() {
+        while (true) {
+            System.out.println("=== Menu Customer ===");
+            System.out.println("1. Lihat Barang");
+            System.out.println("2. Tambah Ke Keranjang");
+            System.out.println("3. Checkout");
+            System.out.println("4. Keluar");
+            System.out.print("Pilih opsi: ");
+            int pilihan = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            switch (pilihan) {
+                case 1:
+                    lihatBarang();
+                    break;
+                case 2:
+                    tambahKeKeranjang();
+                    break;
+                case 3:
+                    checkout();
+                    break;
+                case 4:
+                    System.out.println("Keluar dari menu customer.");
+                    return;
+                default:
+                    System.out.println("Pilihan tidak valid.");
             }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(frame, "Gagal membaca file: " + e.getMessage());
         }
     }
 
-    public static void main(String[] args) {
-        new CustomerDriver();
+    private void lihatBarang() {
+        System.out.println("=== Daftar Barang ===");
+        // Menampilkan header tabel
+        System.out.println("+-----------+----------------------+----------+-------------+");
+        System.out.printf("| %-9s | %-20s | %-8s | %-11s |\n", "ID Barang", "Nama Barang", "Stok", "Harga");
+        System.out.println("+-----------+----------------------+----------+-------------+");
+        
+        // Menampilkan data barang dalam tabel
+        for (Barang barang : listBarang.getBarang()) {
+            System.out.printf("| %-9s | %-20s | %-8d | %-11.2f |\n",
+                    barang.getIdBarang(),
+                    barang.getNama(),
+                    barang.getStok(),
+                    barang.getHarga());
+        }
+        
+        // Menampilkan baris penutup tabel
+        System.out.println("+-----------+----------------------+----------+-------------+");
+    }
+
+    private void tambahKeKeranjang() {
+        System.out.print("Masukkan ID Barang: ");
+        String idBarang = scanner.nextLine();
+        Barang barang = listBarang.cariBarangById(idBarang);
+        if (barang != null) {
+            System.out.print("Masukkan jumlah barang: ");
+            int jumlah = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+            if (barang.getStok() >= jumlah) {
+                customer.tambahKeKeranjang(barang, jumlah);
+                barang.kurangiStok(jumlah);
+                System.out.println("Barang berhasil ditambahkan ke keranjang.");
+            } else {
+                System.out.println("Stok tidak mencukupi.");
+            }
+        } else {
+            System.out.println("Barang tidak ditemukan.");
+        }
+    }
+
+    private void checkout() {
+        // Membuat invoice baru untuk keranjang customer
+        Invoice invoice = new Invoice(customer.getKeranjang());
+
+        // Mencetak invoice
+        invoice.printInvoice();
+
+        // Konfirmasi pembayaran
+        System.out.print("Apakah Anda ingin lanjut ke pembayaran? (y/n): ");
+        String konfirmasi = scanner.nextLine();
+        
+        if (konfirmasi.equalsIgnoreCase("y")) {
+            tampilkanMetodePembayaran(invoice);
+        } else {
+            System.out.println("Checkout dibatalkan.");
+        }
+    }
+
+    private void tampilkanMetodePembayaran(Invoice invoice) {
+        System.out.println("Pilih metode pembayaran:");
+        System.out.println("1. QRIS");
+        System.out.println("2. Bank Transfer");
+        System.out.println("3. COD");
+        System.out.print("Pilih metode pembayaran: ");
+        int pilihan = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        Pembayaran pembayaran = null;
+
+        // Tentukan metode pembayaran berdasarkan pilihan pengguna
+        switch (pilihan) {
+            case 1:
+                pembayaran = new QRIS(invoice.getId());  // Create a QRIS payment object
+                break;
+            case 2:
+                pembayaran = new Bank(invoice.getId());  // Create a BankTransfer payment object
+                break;
+            case 3:
+                pembayaran = new COD(invoice.getId());  // Create a COD payment object
+                break;
+            default:
+                System.out.println("Pilihan tidak valid.");
+                return;
+        }
+
+        // Process the payment using the selected payment method
+        pembayaran.prosesPembayaran();
+
+        // Set metode pembayaran pada invoice
+        invoice.setMetodePembayaran(pembayaran.getClass().getSimpleName()); // Save payment method name to invoice
+
+        // Simulate saving the transaction history after successful payment
+        invoice.saveRiwayatTransaksi();
+
+        // After payment, clear the cart
+        customer.kosongkanKeranjang();
     }
 }
