@@ -8,7 +8,7 @@ public class CustomerDriver {
     public CustomerDriver(Customer customer, ListBarang listBarang) {
         this.customer = customer;
         this.listBarang = listBarang;
-        this.scanner = new Scanner(System.in); // Initialize scanner once
+        this.scanner = new Scanner(System.in); 
     }
 
     public void start() {
@@ -20,7 +20,7 @@ public class CustomerDriver {
             System.out.println("4. Keluar");
             System.out.print("Pilih opsi: ");
             int pilihan = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
+            scanner.nextLine(); 
 
             switch (pilihan) {
                 case 1:
@@ -48,7 +48,6 @@ public class CustomerDriver {
         System.out.printf("| %-9s | %-20s | %-8s | %-11s |\n", "ID Barang", "Nama Barang", "Stok", "Harga");
         System.out.println("+-----------+----------------------+----------+-------------+");
         
-        // Menampilkan data barang dalam tabel
         for (Barang barang : listBarang.getBarang()) {
             System.out.printf("| %-9s | %-20s | %-8d | %-11.2f |\n",
                     barang.getIdBarang(),
@@ -57,7 +56,6 @@ public class CustomerDriver {
                     barang.getHarga());
         }
         
-        // Menampilkan baris penutup tabel
         System.out.println("+-----------+----------------------+----------+-------------+");
     }
 
@@ -68,7 +66,7 @@ public class CustomerDriver {
         if (barang != null) {
             System.out.print("Masukkan jumlah barang: ");
             int jumlah = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
+            scanner.nextLine(); 
             if (barang.getStok() >= jumlah) {
                 customer.tambahKeKeranjang(barang, jumlah);
                 barang.kurangiStok(jumlah);
@@ -82,13 +80,10 @@ public class CustomerDriver {
     }
 
     private void checkout() {
-        // Membuat invoice baru untuk keranjang customer
         Invoice invoice = new Invoice(customer.getKeranjang());
 
-        // Mencetak invoice
         invoice.printInvoice();
 
-        // Konfirmasi pembayaran
         System.out.print("Apakah Anda ingin lanjut ke pembayaran? (y/n): ");
         String konfirmasi = scanner.nextLine();
         
@@ -106,36 +101,31 @@ public class CustomerDriver {
         System.out.println("3. COD");
         System.out.print("Pilih metode pembayaran: ");
         int pilihan = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
 
         Pembayaran pembayaran = null;
 
-        // Tentukan metode pembayaran berdasarkan pilihan pengguna
         switch (pilihan) {
             case 1:
-                pembayaran = new QRIS(invoice.getId());  // Create a QRIS payment object
+                pembayaran = new QRIS(invoice.getId());  
                 break;
             case 2:
-                pembayaran = new Bank(invoice.getId());  // Create a BankTransfer payment object
+                pembayaran = new Bank(invoice.getId());  
                 break;
             case 3:
-                pembayaran = new COD(invoice.getId());  // Create a COD payment object
+                pembayaran = new COD(invoice.getId());  
                 break;
             default:
                 System.out.println("Pilihan tidak valid.");
                 return;
         }
 
-        // Process the payment using the selected payment method
         pembayaran.prosesPembayaran();
 
-        // Set metode pembayaran pada invoice
-        invoice.setMetodePembayaran(pembayaran.getClass().getSimpleName()); // Save payment method name to invoice
+        invoice.setMetodePembayaran(pembayaran.getClass().getSimpleName()); 
 
-        // Simulate saving the transaction history after successful payment
         invoice.saveRiwayatTransaksi();
 
-        // After payment, clear the cart
         customer.kosongkanKeranjang();
     }
 }
