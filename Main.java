@@ -20,7 +20,7 @@ public class Main {
                 System.out.println("2. Keluar");
                 System.out.print("Pilih opsi: ");
                 int pilihan = scanner.nextInt();
-                scanner.nextLine(); // Buang sisa newline
+                scanner.nextLine();
 
                 if (pilihan == 1) {
                     // Proses login
@@ -33,30 +33,28 @@ public class Main {
                     if (username.equals(adminUsername) && password.equals(adminPassword)) {
                         // Login sebagai admin
                         System.out.println("Login berhasil sebagai Admin.");
-                        Admin admin = new Admin(username); // Menggunakan username sebagai ID
+                        Admin admin = new Admin(username); 
                         AdminDriver adminDriver = new AdminDriver(admin, listBarang);
                         adminDriver.start(); // Setelah selesai, kembali ke menu awal
                     } else if (username.equals(customerUsername) && password.equals(customerPassword)) {
                         // Login sebagai customer
                         System.out.println("Login berhasil sebagai Customer.");
-                        Customer customer = new Customer(username); // Menggunakan username sebagai ID
+                        Customer customer = new Customer(username); 
                         CustomerDriver customerDriver = new CustomerDriver(customer, listBarang);
                         customerDriver.start(); // Setelah selesai, kembali ke menu awal
                     } else {
                         System.out.println("Username atau password salah!");
                     }
                 } else if (pilihan == 2) {
-                    // Keluar dari sistem
                     System.out.println("Keluar dari sistem. Sampai jumpa!");
-                    running = false; // Mengakhiri *loop*
+                    running = false; 
                 } else {
-                    // Opsi tidak valid
                     System.out.println("Pilihan tidak valid. Silakan coba lagi.");
                 }
             } catch (Exception e) {
                 // Menangkap kesalahan input (seperti memasukkan huruf saat diminta angka)
                 System.out.println("Input tidak valid. Harap masukkan angka!");
-                scanner.nextLine(); // Membersihkan input buffer
+                scanner.nextLine();
             }
         }
 
