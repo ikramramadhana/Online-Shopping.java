@@ -1,0 +1,2 @@
+Transaksi #1 | Customer: Ikram Al Ghiffari = Ayam kecap, Metode Pembayaran: QRIS, Total Pembelian: 25000.0
+========================================================================================
