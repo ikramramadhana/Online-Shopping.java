@@ -1,0 +1,131 @@
+import java.util.Scanner;
+
+public class CustomerDriver {
+    private Customer customer;
+    private ListBarang listBarang;
+    private Scanner scanner;
+
+    public CustomerDriver(Customer customer, ListBarang listBarang) {
+        this.customer = customer;
+        this.listBarang = listBarang;
+        this.scanner = new Scanner(System.in); 
+    }
+
+    public void start() {
+        while (true) {
+            System.out.println("=== Menu Customer ===");
+            System.out.println("1. Lihat Barang");
+            System.out.println("2. Tambah Ke Keranjang");
+            System.out.println("3. Checkout");
+            System.out.println("4. Keluar");
+            System.out.print("Pilih opsi: ");
+            int pilihan = scanner.nextInt();
+            scanner.nextLine(); 
+
+            switch (pilihan) {
+                case 1:
+                    lihatBarang();
+                    break;
+                case 2:
+                    tambahKeKeranjang();
+                    break;
+                case 3:
+                    checkout();
+                    break;
+                case 4:
+                    System.out.println("Keluar dari menu customer.");
+                    return;
+                default:
+                    System.out.println("Pilihan tidak valid.");
+            }
+        }
+    }
+
+    private void lihatBarang() {
+        System.out.println("=== Daftar Barang ===");
+        // Menampilkan header tabel
+        System.out.println("+-----------+----------------------+----------+-------------+");
+        System.out.printf("| %-9s | %-20s | %-8s | %-11s |\n", "ID Barang", "Nama Barang", "Stok", "Harga");
+        System.out.println("+-----------+----------------------+----------+-------------+");
+        
+        for (Barang barang : listBarang.getBarang()) {
+            System.out.printf("| %-9s | %-20s | %-8d | %-11.2f |\n",
+                    barang.getIdBarang(),
+                    barang.getNama(),
+                    barang.getStok(),
+                    barang.getHarga());
+        }
+        
+        System.out.println("+-----------+----------------------+----------+-------------+");
+    }
+
+    private void tambahKeKeranjang() {
+        System.out.print("Masukkan ID Barang: ");
+        String idBarang = scanner.nextLine();
+        Barang barang = listBarang.cariBarangById(idBarang);
+        if (barang != null) {
+            System.out.print("Masukkan jumlah barang: ");
+            int jumlah = scanner.nextInt();
+            scanner.nextLine(); 
+            if (barang.getStok() >= jumlah) {
+                customer.tambahKeKeranjang(barang, jumlah);
+                barang.kurangiStok(jumlah);
+                System.out.println("Barang berhasil ditambahkan ke keranjang.");
+            } else {
+                System.out.println("Stok tidak mencukupi.");
+            }
+        } else {
+            System.out.println("Barang tidak ditemukan.");
+        }
+    }
+
+    private void checkout() {
+        Invoice invoice = new Invoice(customer.getKeranjang());
+
+        invoice.printInvoice();
+
+        System.out.print("Apakah Anda ingin lanjut ke pembayaran? (y/n): ");
+        String konfirmasi = scanner.nextLine();
+        
+        if (konfirmasi.equalsIgnoreCase("y")) {
+            tampilkanMetodePembayaran(invoice);
+        } else {
+            System.out.println("Checkout dibatalkan.");
+        }
+    }
+
+    private void tampilkanMetodePembayaran(Invoice invoice) {
+        System.out.println("Pilih metode pembayaran:");
+        System.out.println("1. QRIS");
+        System.out.println("2. Bank Transfer");
+        System.out.println("3. COD");
+        System.out.print("Pilih metode pembayaran: ");
+        int pilihan = scanner.nextInt();
+        scanner.nextLine(); 
+
+        Pembayaran pembayaran = null;
+
+        switch (pilihan) {
+            case 1:
+                pembayaran = new QRIS(invoice.getId());  
+                break;
+            case 2:
+                pembayaran = new Bank(invoice.getId());  
+                break;
+            case 3:
+                pembayaran = new COD(invoice.getId());  
+                break;
+            default:
+                System.out.println("Pilihan tidak valid.");
+                return;
+        }
+
+        pembayaran.prosesPembayaran();
+
+        invoice.setMetodePembayaran(pembayaran.getClass().getSimpleName()); 
+
+        invoice.saveRiwayatTransaksi();
+
+        customer.kosongkanKeranjang();
+    }
+}
