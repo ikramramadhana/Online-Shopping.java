@@ -66,7 +66,7 @@ public class Invoice {
                 totalPembelian += barang.getHarga() * barang.getJumlah();
             }
             writer.write("Total Pembelian: " + totalPembelian + "\n");
-            writer.write("================================================================================================\n");
+            writer.write("=============================================================================================\n");
             System.out.println("Transaksi berhasil disimpan.");
         } catch (IOException e) {
             System.out.println("Gagal menulis riwayat transaksi: " + e.getMessage());
