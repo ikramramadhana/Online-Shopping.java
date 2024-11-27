@@ -49,7 +49,6 @@ public class CustomerDriver {
         System.out.printf("| %-9s | %-20s | %-8s | %-11s |\n", "ID Barang", "Nama Barang", "Stok", "Harga");
         System.out.println("+-----------+----------------------+----------+-------------+");
 
-        // Menampilkan barang dalam format tabel
         for (Barang barang : listBarang.getBarang()) {
             System.out.printf("| %-9s | %-20s | %-8d | %-11.2f |\n",
                     barang.getIdBarang(), barang.getNama(), barang.getStok(), barang.getHarga());
@@ -84,19 +83,14 @@ public class CustomerDriver {
             return;
         }
 
-        // Membuat transaksi berdasarkan keranjang customer
         transaksi = new Transaksi(customer, customer.getKeranjang());
 
-        // Mencetak transaksi
         transaksi.printTransaksi();
 
-        // Membuat invoice dari transaksi
         Invoice invoice = new Invoice(transaksi);
 
-        // Mencetak invoice
         invoice.printInvoice();
 
-        // Konfirmasi pembayaran
         System.out.print("Apakah Anda ingin lanjut ke pembayaran? (y/n): ");
         String konfirmasi = scanner.nextLine();
 
@@ -114,11 +108,10 @@ public class CustomerDriver {
         System.out.println("3. COD");
         System.out.print("Pilih metode pembayaran: ");
         int pilihan = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine(); 
 
         Pembayaran pembayaran = null;
 
-        // Tentukan metode pembayaran berdasarkan pilihan
         switch (pilihan) {
             case 1:
                 pembayaran = new QRIS(invoice.getId());
@@ -134,7 +127,6 @@ public class CustomerDriver {
                 return;
         }
 
-        // Proses pembayaran
         pembayaran.prosesPembayaran();
         invoice.setMetodePembayaran(pembayaran.getClass().getSimpleName());
         invoice.saveRiwayatTransaksi();
